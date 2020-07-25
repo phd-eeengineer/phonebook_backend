@@ -1,8 +1,12 @@
 const express = require('express')
 var morgan = require('morgan')
+const cors = require('cors')
+
+
 
 const app = express()
 app.use(express.json())
+app.use(cors())
 
 morgan.token('data', function (req, res) { 
   if (req.method === "POST") {
