@@ -21,67 +21,6 @@ morgan.token('data', function (req, res) {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
 
-let persons = [
-    {
-      "name": "Arto Hellas",
-      "number": "040-123456",
-      "id": 1
-    },
-    {
-      "name": "Ada Lovelace",
-      "number": "39-44-5323523",
-      "id": 2
-    },
-    {
-      "name": "Dan Abramov",
-      "number": "12-43-234345",
-      "id": 3
-    },
-    {
-      "name": "Maria Mat",
-      "number": "111- 232 33 44",
-      "id": 9
-    },
-    {
-      "name": "Julia Bor",
-      "number": "111 333 44 55",
-      "id": 10
-    }
-]
-
-app.get('/', (request, response) => {
-  response.send('<h1>Phonebook 2</h1>')
-})
-
-app.get('/info', (request, response) => {
-  Person.countDocuments({})
-  .then(count => {
-    response.send(`<div>Phonebook has info for ${count} people.</div><br><div>${new Date()}</div>`)
-  })
-})
-
-app.get('/api/persons', (request, response) => {
-  Person.find({}).then(persons => {
-    response.json(persons)
-    //response.json(persons.map(person => person.toJSON()))
-  })
-})
-
-app.get('/api/persons/:id', (request, response) => {
-  Person.findById(request.params.id).then(person => {
-    response.json(person)
-  })
-})
-
-app.delete('/api/persons/:id', (request, response, next) => {
-  Person
-    .findByIdAndRemove(request.params.id)
-    .then(result => {
-      response.status(204).end()
-    })
-    .catch(error => next(error)) 
-})
-
 const generateId = () => {
   const id = Math.floor(Math.random() * (1000)) + 1
   if(persons.find(p => p.id !== id)){
@@ -93,6 +32,47 @@ const generateId = () => {
 
   return id;
 }
+
+app.get('/', (request, response) => {
+  response.send('<h1>Phonebook 2</h1>')
+})
+
+app.get('/info', (request, response, next) => {
+  Person
+    .countDocuments({})
+    .then(count => {
+      response.send(`<div>Phonebook has info for ${count} people.</div><br><div>${new Date()}</div>`)
+    })
+    .catch(error => next(error))
+})
+
+app.get('/api/persons', (request, response, next) => {
+  Person
+    .find({})
+    .then(persons => {
+      response.json(persons)
+      //response.json(persons.map(person => person.toJSON()))
+    })
+    .catch(error => next(error))
+})
+
+app.get('/api/persons/:id', (request, response, next) => {
+  Person
+    .findById(request.params.id)
+    .then(person => {
+      response.json(person)
+    })
+    .catch(error => next(error))
+})
+
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person
+    .findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error)) 
+})
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
@@ -128,7 +108,51 @@ app.post('/api/persons', (request, response) => {
   })
 })
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+  next(error)
+}
+app.use(errorHandler)
+
 const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+/*
+let persons = [
+    {
+      "name": "Arto Hellas",
+      "number": "040-123456",
+      "id": 1
+    },
+    {
+      "name": "Ada Lovelace",
+      "number": "39-44-5323523",
+      "id": 2
+    },
+    {
+      "name": "Dan Abramov",
+      "number": "12-43-234345",
+      "id": 3
+    },
+    {
+      "name": "Maria Mat",
+      "number": "111- 232 33 44",
+      "id": 9
+    },
+    {
+      "name": "Julia Bor",
+      "number": "111 333 44 55",
+      "id": 10
+    }
+] */
