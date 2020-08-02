@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
+var uniqueValidator = require('mongoose-unique-validator');
+
 mongoose.set('useFindAndModify', false)
+mongoose.set('useCreateIndex', true)
 
 const url = process.env.MONGODB_URI
 
@@ -15,10 +18,23 @@ mongoose
     })
 
 const phonebookSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        unique: true,
+        required: true,
+        minlength: 3
+    },
+    number: {
+        type: String,
+        required: true,
+        validate: {
+            validator: (v) => /^\d(\s{0,1}-{0,1}\d{1,2}){6}\d$/.test(v),
+            message: props => 'Phone number must have at least 8 digits'
+        },
+    },
 })
 
+phonebookSchema.plugin(uniqueValidator);
 phonebookSchema.set('toJSON', {
     transform: (document, returnedObject) => {
       returnedObject.id = returnedObject._id.toString()
