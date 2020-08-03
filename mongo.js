@@ -16,7 +16,7 @@ const inputNumber = process.argv[4]
 //console.log("inputNumber",inputNumber)
 
 
-const url = 
+const url =
   `mongodb+srv://fullstack:${password}@cluster0.ov0sg.mongodb.net/phonebook-app?retryWrites=true&w=majority`
 
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -34,7 +34,7 @@ if(inputName !== undefined){
     name: inputName,
     number: inputNumber,
   })
-  
+
   // // veri tabanına veri yazma
   person.save().then(result => {
     //console.log('note saved!')
@@ -45,13 +45,13 @@ if(inputName !== undefined){
 // veritabanından veri almak
 // Note.find({ important: true }).then(result => { // sadece important olanları olmak
 if(process.argv.length <= 3){
-  console.log("phonebook:")
+  console.log('phonebook:')
   Person
     .find({})
     .then(persons => {
-        persons.forEach(note => {
+      persons.forEach(note => {
         console.log(note.name, note.number)
+      })
+      mongoose.connection.close()
     })
-    mongoose.connection.close()
-  })
 }
